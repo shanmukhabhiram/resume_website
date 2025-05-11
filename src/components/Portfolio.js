@@ -111,7 +111,7 @@
 
 // export default Portfolio;
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import './Portfolio.css';
 
 function Portfolio() {
@@ -140,7 +140,7 @@ function Portfolio() {
 
         logVisit();
     }, []);
-    
+
     return (
         <div className="portfolio">
             <aside className="sidebar">

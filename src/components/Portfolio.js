@@ -115,6 +115,32 @@ import React from 'react';
 import './Portfolio.css';
 
 function Portfolio() {
+    useEffect(() => {
+        const logVisit = async () => {
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            const visit = {
+            ip: data.ip,
+            region: data.region,
+            country: data.country_name,
+            timezone: data.timezone,
+            regionTime: new Date().toLocaleString("en-US", { timeZone: data.timezone }),
+            indiaTime: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
+            timestamp: new Date().toISOString(),
+            };
+
+            let visits = JSON.parse(localStorage.getItem("viewLogs")) || [];
+            visits.push(visit);
+            localStorage.setItem("viewLogs", JSON.stringify(visits));
+        } catch (err) {
+            console.error("Failed to log visit:", err);
+        }
+        };
+
+        logVisit();
+    }, []);
+    
     return (
         <div className="portfolio">
             <aside className="sidebar">

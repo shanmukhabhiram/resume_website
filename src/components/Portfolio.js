@@ -114,32 +114,106 @@
 import React, { useEffect } from 'react';
 import './Portfolio.css';
 
+// Import Firebase database functions
+// 'ref' creates a database reference
+// 'push' adds new data with a unique key
+// 'set' is used by push internally, but might be useful for other writes
+import { ref, push } from "firebase/database";
+
+// Import the initialized database instance from your config file
+// *** IMPORTANT: Make sure your firebase-config.js file exists and exports 'database' ***
+import { database } from './firebase-config'; // <-- Adjust this path if necessary
+
 function Portfolio() {
+    // useEffect(() => {
+    //     const logVisit = async () => {
+    //     try {
+    //         const res = await fetch('https://ipapi.co/json/');
+    //         const data = await res.json();
+    //         const visit = {
+    //         ip: data.ip,
+    //         region: data.region,
+    //         country: data.country_name,
+    //         timezone: data.timezone,
+    //         regionTime: new Date().toLocaleString("en-US", { timeZone: data.timezone }),
+    //         indiaTime: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
+    //         timestamp: new Date().toISOString(),
+    //         };
+
+    //         let visits = JSON.parse(localStorage.getItem("viewLogs")) || [];
+    //         visits.push(visit);
+    //         localStorage.setItem("viewLogs", JSON.stringify(visits));
+    //     } catch (err) {
+    //         console.error("Failed to log visit:", err);
+    //     }
+    //     };
+
+    //     logVisit();
+    // }, []);
+
+    // useEffect to run the visitor logging logic when the component mounts
     useEffect(() => {
         const logVisit = async () => {
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const data = await res.json();
-            const visit = {
-            ip: data.ip,
-            region: data.region,
-            country: data.country_name,
-            timezone: data.timezone,
-            regionTime: new Date().toLocaleString("en-US", { timeZone: data.timezone }),
-            indiaTime: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
-            timestamp: new Date().toISOString(),
-            };
+            try {
+                // Fetch IP and location data
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
 
-            let visits = JSON.parse(localStorage.getItem("viewLogs")) || [];
-            visits.push(visit);
-            localStorage.setItem("viewLogs", JSON.stringify(visits));
-        } catch (err) {
-            console.error("Failed to log visit:", err);
-        }
+                // Prepare the visit data object
+                const visit = {
+                    ipv4: data.ip, // Changed ip to ipv4 for clarity as per previous code
+                    // ipapi.co might not provide ipv6 consistently, add as available
+                    ipv6: data.ipv6 || null, // Use null if ipv6 is not provided
+                    region: data.region,
+                    country: data.country_name,
+                    timezone: data.timezone,
+                    regionTime: new Date().toLocaleString("en-US", { timeZone: data.timezone }),
+                    indiaTime: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
+                    timestamp: new Date().toISOString(), // ISO string is good for sorting
+                    // Add other relevant data if needed, like city, postal, etc.
+                    city: data.city || null,
+                    postal: data.postal || null,
+                    latitude: data.latitude || null,
+                    longitude: data.longitude || null,
+                    org: data.org || null, // Internet Service Provider / Organization
+                };
+
+                // --- Firebase Logic: Save visit data to Realtime Database ---
+
+                // Get a reference to the 'visitorLogs' node
+                const visitorLogsRef = ref(database, 'visitorLogs');
+
+                // Push the new visit object to the 'visitorLogs' node.
+                // push() automatically generates a unique key for each entry.
+                push(visitorLogsRef, visit)
+                    .then(() => {
+                        console.log("Visitor log saved to Firebase successfully!");
+                    })
+                    .catch((error) => {
+                        console.error("Failed to save visitor log to Firebase:", error);
+                        // You might want to handle this error, e.g., retry or log it differently
+                    });
+
+                // --- End Firebase Logic ---
+
+                // *** Remove localStorage logic ***
+                // let visits = JSON.parse(localStorage.getItem("viewLogs")) || [];
+                // visits.push(visit);
+                // localStorage.setItem("viewLogs", JSON.stringify(visits));
+                // *** End remove localStorage logic ***
+
+            } catch (err) {
+                console.error("Failed to fetch IP data or log visit:", err);
+                // Handle errors fetching IP data
+            }
         };
 
+        // Call the logVisit function when the component mounts
         logVisit();
-    }, []);
+
+        // No cleanup needed for this effect as it only runs once on mount
+        // and doesn't set up any subscriptions or timers that need clearing.
+    }, []); // The empty dependency array ensures this effect runs only once on mount
 
     return (
         <div className="portfolio">

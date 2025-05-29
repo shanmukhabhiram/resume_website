@@ -274,7 +274,7 @@ function Portfolio() {
                     <div className="experience-item">
                         <h3>Fullstack Developer (Freelancer)</h3>
                         <p><strong>ByteNode</strong></p>
-                        <p>December 2023 - Present</p>
+                        <p>April 2025 - Present</p>
                         <ul>
                             <li>Developed Flask APIs and React frontend for EV dashboard, water meter management, and IoT motor control.</li>
                             <li>Built reporting and billing systems with PDF export.</li>
